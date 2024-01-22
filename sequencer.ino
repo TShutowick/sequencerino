@@ -1,5 +1,4 @@
-#define NOTE_ON 90
-#define NOTE_OFF 80
+#include "MIDI.h"
 
 #define MAX_NOTES 256
 #define MAX_BEATS 16
@@ -83,18 +82,15 @@ public:
   void play() {
     for (short i = 0; i < num_notes; ++i) {
       if (notes[i].beat == cur_beat) {
+        byte status = 0;
         if (notes[i].velocity > 0) {
-          Serial.print("PLAYING ");
-    byte noteOnStatus = 0x90 | (notes[i].channel & 0x0f);
-Serial.print(noteOnStatus, HEX);
-    //Transmit a Note-On message
-    Serial1.write(noteOnStatus);
-    Serial1.write(notes[i].note);
-    Serial1.write(notes[i].velocity);
+          status = MIDI.build_status_byte(NOTE_ON, notes[i].channel);
         } else {
-          // TODO: send note off
-          
+          status = MIDI.build_status_byte(NOTE_OFF, notes[i].channel);
         }
+        Serial1.write(status);
+        Serial1.write(notes[i].note);
+        Serial1.write(notes[i].velocity);
       }
     }
   }
@@ -110,18 +106,6 @@ void setup()
   Serial1.begin(31250,SERIAL_8N1);
 }
 
-MidiStatus readStatus() {
-      int incomingByte = Serial1.read();
-      if (incomingByte >= 0x80 && incomingByte <= 0x9F) {
-              Serial.println(incomingByte,HEX);
-
-          byte status = (incomingByte >> 4) * 10;
-          byte channel = (incomingByte & 0x0f);
-          return {status,channel};
-      }
-      return {0,0};
-}
-
 int readNote() {
     int incomingByte = Serial1.read();
     while (incomingByte < 0) incomingByte = Serial1.read();
@@ -130,7 +114,7 @@ int readNote() {
 
 
 bool handleInput() {
-    MidiStatus statusByte = readStatus();
+    MIDI::MidiStatus statusByte = MIDI::parse_status_byte(Serial1.read());
     if (!statusByte.status) return false;
 
     int noteByte = readNote();
