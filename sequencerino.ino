@@ -7,7 +7,7 @@ struct Note {
   byte channel;
   byte beat;
   byte note;
-  short velocity; // negative is off 
+  short velocity; // negative is off
 };
 
 struct MidiStatus {
@@ -24,11 +24,11 @@ public:
   // Intermediate data needed for recording
   byte cur_beat;
 
-  // the last time 
+  // the last time
   int last_step_time = 0;
   // length in ms of one beat
   int beat_length = 500;
-  
+
   Sequencer(int max_beats=16) {
     num_beats = max_beats;
     clear();
@@ -72,7 +72,7 @@ public:
     if(!add_note_on(channel, note, -velocity)) {
       return false;
     }
-    // If there is a "note-on" event on the same beat, then move this note off 
+    // If there is a "note-on" event on the same beat, then move this note off
     // to the next beat.
     for (short i = 0; i < num_notes - 1; ++i) {
       if (notes[i].note == note && notes[i].velocity > 0) {
@@ -98,7 +98,7 @@ public:
         }
         Serial1.write(status);
         Serial1.write(notes[i].note);
-        Serial1.write(notes[i].velocity);
+        Serial1.write(abs(notes[i].velocity));
       }
     }
   }
@@ -150,6 +150,6 @@ void loop()
 {
   handleInput();
   if (seq.maybe_step()) {
-    seq.play();  
+    seq.play();
   }
 }
