@@ -2,6 +2,7 @@
 
 #define MAX_NOTES 256
 #define MAX_BEATS 16
+#define PULSES_PER_BEAT 24
 
 struct Note {
   byte channel;
@@ -23,10 +24,12 @@ public:
   short num_notes;
   // Intermediate data needed for recording
   byte cur_beat;
+  byte cur_pulse;
 
-  int last_step_time = 0;
-  // length in ms of one beat
-  int beat_length = 500;
+  int last_pulse_time = 0;
+  // length in ms of one pulse, of which there are 24 per beat
+  // this is necessary in order for midi clock signals to work
+  int pulse_length = 20;
 
   Sequencer(int max_beats=16) {
     num_beats = max_beats;
@@ -36,23 +39,27 @@ public:
   void clear() {
     num_notes = 0;
     cur_beat = 0;
+    cur_pulse = 0;
   }
 
+  // Increment the pulse until it hits 24, then increment the beat.
   int step() {
-    last_step_time = millis();
-    ++cur_beat;
-    if (cur_beat == num_beats) {
-      cur_beat = 0;
+    last_pulse_time = millis();
+    ++cur_pulse;
+    if (cur_pulse == PULSES_PER_BEAT) {
+        cur_pulse = 0;
+        ++cur_beat;
+        if (cur_beat == num_beats) {
+          cur_beat = 0;
+        }
     }
-    return cur_beat;
+    return cur_pulse;
   }
 
   bool maybe_step() {
     int now = millis();
-    if (now - last_step_time > beat_length) {
+    if (now - last_pulse_time > pulse_length) {
       step();
-      Serial.print("STEP ");
-      Serial.println(cur_beat);
       return true;
     }
     return false;
@@ -88,10 +95,6 @@ public:
         byte status = 0;
         if (notes[i].velocity > 0) {
           status = MIDI::build_status_byte(NOTE_ON, notes[i].channel);
-          Serial.print("PLAYING ");
-          Serial.print(notes[i].note);
-          Serial.print(" ON CHANNEL ");
-          Serial.println(notes[i].channel);
         } else {
           status = MIDI::build_status_byte(NOTE_OFF, notes[i].channel);
         }
@@ -109,8 +112,9 @@ Sequencer seq;
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial1.begin(31250,SERIAL_8N1);
+    Serial.begin(9600);
+    Serial1.begin(31250,SERIAL_8N1);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 int read_note() {
@@ -127,18 +131,11 @@ bool handle_input() {
     int note_byte = read_note();
     int vel_byte = read_note();
     if (status_byte.status == NOTE_ON) {
-      Serial.print("NOTE ON ");
       seq.add_note_on(status_byte.channel, note_byte, vel_byte);
     }
     if (status_byte.status == NOTE_OFF) {
-      Serial.print("NOTE OFF ");
       seq.add_note_off(status_byte.channel, note_byte, vel_byte);
     }
-    Serial.print(note_byte);
-    Serial.print(" CHANNEL ");
-    Serial.print(status_byte.channel);
-    Serial.print(" VELOCITY ");
-    Serial.println(vel_byte);
     Serial1.write( MIDI::build_status_byte(status_byte.status,status_byte.channel));
     Serial1.write(note_byte);
     Serial1.write(vel_byte);
@@ -147,8 +144,13 @@ bool handle_input() {
 
 void loop()
 {
-  handle_input();
-  if (seq.maybe_step()) {
-    seq.play();
-  }
+    handle_input();
+    if (seq.maybe_step()) {
+      seq.play();
+    }
+    if (seq.cur_pulse == 0) {
+        digitalWrite(LED_BUILTIN, HIGH);
+    } else if (seq.cur_pulse == PULSES_PER_BEAT / 2) {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
 }
