@@ -5,9 +5,11 @@ typedef unsigned char byte;
 #include "../MIDI.h"
 bool ok(bool test_passes, std::string msg) {
    if (test_passes) {
-       std::cout << "\033[1;32m" << msg  << "\033[0m\n";
+        // those random characters make it green.
+        std::cout << "\033[1;32m" << msg  << "\033[0m\n";
    } else {
-       std::cout << "\033[1;31m" << msg  << "\033[0m\n";
+        // those random characters make it red.
+        std::cout << "\033[1;31m" << msg  << "\033[0m\n";
    }
    return test_passes;
 }

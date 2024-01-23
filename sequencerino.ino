@@ -24,7 +24,6 @@ public:
   // Intermediate data needed for recording
   byte cur_beat;
 
-  // the last time
   int last_step_time = 0;
   // length in ms of one beat
   int beat_length = 500;
@@ -114,41 +113,41 @@ void setup()
   Serial1.begin(31250,SERIAL_8N1);
 }
 
-int readNote() {
-    int incomingByte = Serial1.read();
-    while (incomingByte < 0) incomingByte = Serial1.read();
-    return incomingByte;
+int read_note() {
+    int incoming_byte = Serial1.read();
+    while (incoming_byte < 0) incoming_byte = Serial1.read();
+    return incoming_byte;
 }
 
 
-bool handleInput() {
-    MIDI::MidiStatus statusByte = MIDI::parse_status_byte(Serial1.read());
-    if (!statusByte.status) return false;
+bool handle_input() {
+    MIDI::MidiStatus status_byte = MIDI::parse_status_byte(Serial1.read());
+    if (!status_byte.status) return false;
 
-    int noteByte = readNote();
-    int velByte = readNote();
-    if (statusByte.status == NOTE_ON) {
+    int note_byte = read_note();
+    int vel_byte = read_note();
+    if (status_byte.status == NOTE_ON) {
       Serial.print("NOTE ON ");
-      seq.add_note_on(statusByte.channel, noteByte, velByte);
+      seq.add_note_on(status_byte.channel, note_byte, vel_byte);
     }
-    if (statusByte.status == NOTE_OFF) {
+    if (status_byte.status == NOTE_OFF) {
       Serial.print("NOTE OFF ");
-      seq.add_note_off(statusByte.channel, noteByte, velByte);
+      seq.add_note_off(status_byte.channel, note_byte, vel_byte);
     }
-    Serial.print(noteByte);
+    Serial.print(note_byte);
     Serial.print(" CHANNEL ");
-    Serial.print(statusByte.channel);
+    Serial.print(status_byte.channel);
     Serial.print(" VELOCITY ");
-    Serial.println(velByte);
-    Serial1.write( MIDI::build_status_byte(statusByte.status,statusByte.channel));
-    Serial1.write(noteByte);
-    Serial1.write(velByte);
+    Serial.println(vel_byte);
+    Serial1.write( MIDI::build_status_byte(status_byte.status,status_byte.channel));
+    Serial1.write(note_byte);
+    Serial1.write(vel_byte);
     return true;
 }
 
 void loop()
 {
-  handleInput();
+  handle_input();
   if (seq.maybe_step()) {
     seq.play();
   }
