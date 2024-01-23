@@ -42,14 +42,18 @@ public:
   int step() {
     last_step_time = millis();
     ++cur_beat;
-    cur_beat %= num_beats;
-    return ++cur_beat;
+    if (cur_beat == num_beats) {
+      cur_beat = 0;
+    }
+    return cur_beat;
   }
 
   bool maybe_step() {
     int now = millis();
     if (now - last_step_time > beat_length) {
       step();
+      Serial.print("STEP ");
+      Serial.println(cur_beat);
       return true;
     }
     return false;
@@ -84,9 +88,13 @@ public:
       if (notes[i].beat == cur_beat) {
         byte status = 0;
         if (notes[i].velocity > 0) {
-          status = MIDI.build_status_byte(NOTE_ON, notes[i].channel);
+          status = MIDI::build_status_byte(NOTE_ON, notes[i].channel);
+          Serial.print("PLAYING ");
+          Serial.print(notes[i].note);
+          Serial.print(" ON CHANNEL ");
+          Serial.println(notes[i].channel);
         } else {
-          status = MIDI.build_status_byte(NOTE_OFF, notes[i].channel);
+          status = MIDI::build_status_byte(NOTE_OFF, notes[i].channel);
         }
         Serial1.write(status);
         Serial1.write(notes[i].note);
@@ -121,17 +129,20 @@ bool handleInput() {
     int velByte = readNote();
     if (statusByte.status == NOTE_ON) {
       Serial.print("NOTE ON ");
-      seq.add_note_on(noteByte, velByte);
+      seq.add_note_on(statusByte.channel, noteByte, velByte);
     }
     if (statusByte.status == NOTE_OFF) {
       Serial.print("NOTE OFF ");
-      seq.add_note_off(noteByte, velByte);
+      seq.add_note_off(statusByte.channel, noteByte, velByte);
     }
     Serial.print(noteByte);
     Serial.print(" CHANNEL ");
     Serial.print(statusByte.channel);
     Serial.print(" VELOCITY ");
     Serial.println(velByte);
+    Serial1.write( MIDI::build_status_byte(statusByte.status,statusByte.channel));
+    Serial1.write(noteByte);
+    Serial1.write(velByte);
     return true;
 }
 
@@ -142,4 +153,3 @@ void loop()
     seq.play();  
   }
 }
-
