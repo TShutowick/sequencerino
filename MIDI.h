@@ -1,5 +1,8 @@
 #define NOTE_ON 0x90
 #define NOTE_OFF 0x80
+#ifndef ARDUINO
+#include "t/lib/MockArduino.h"
+#endif
 
 namespace MIDI{
 
@@ -8,8 +11,9 @@ struct MidiStatus {
   byte channel;
 };
 
-MidiStatus parse_status_byte(byte b) {
+MidiStatus parse_status_byte() {
     MidiStatus ret = {};
+	byte b = Serial1.read();
     if (b >= 0x80 && b <= 0x9F) {
         ret.status = (b >> 4) << 4;
         ret.channel = (b & 0x0f);

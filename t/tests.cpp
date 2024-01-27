@@ -1,6 +1,5 @@
 #include <iostream>
-
-typedef unsigned char byte;
+#include "lib/MockArduino.h"
 
 #include "../MIDI.h"
 bool ok(bool test_passes, std::string msg) {
@@ -24,15 +23,16 @@ bool is(T got, T want, std::string msg) {
 }
 
 void test_parse_status() {
-    MIDI::MidiStatus status = MIDI::parse_status_byte(0x80);
+	Serial1.push(std::vector<int>{0x80,0x93,0x55});
+    MIDI::MidiStatus status = MIDI::parse_status_byte();
     is((int)status.status,  NOTE_OFF, "Correct MIDI command (Note Off)");
     is((int)status.channel, 0, "Correct MIDI channel");
 
-    status = MIDI::parse_status_byte(0x93);
+    status = MIDI::parse_status_byte();
     is((int)status.status,  NOTE_ON, "Correct MIDI command (Note On)");
     is((int)status.channel, 3, "Correct MIDI channel");
 
-    status = MIDI::parse_status_byte(0x55);
+    status = MIDI::parse_status_byte();
     is((int)status.status, 0, "Empty MIDI status");
 }
 
@@ -41,8 +41,19 @@ void test_build_status() {
     is(status, 0x83, "Correct status byte (Note Off on Channel 3)");
 }
 
+void test_mock_serial() {
+	Serial1.push(std::vector<int>{1,2});
+	int x = Serial1.read();
+	is(x,1,"First item");
+	x = Serial1.read();
+	is(x,2,"Last item");
+	x = Serial1.read();
+	is(x,-1,"No data");
+}
+
 int main() {
     test_parse_status();
     test_build_status();
+	test_mock_serial();
     return 0;
 }

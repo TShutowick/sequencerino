@@ -125,7 +125,7 @@ int read_note() {
 
 
 bool handle_input() {
-    MIDI::MidiStatus status_byte = MIDI::parse_status_byte(Serial1.read());
+    MIDI::MidiStatus status_byte = MIDI::parse_status_byte();
     if (!status_byte.status) return false;
 
     int note_byte = read_note();
