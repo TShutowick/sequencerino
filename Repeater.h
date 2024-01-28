@@ -1,4 +1,20 @@
-// Repeater calls a function at an interval.
+/* 
+ Repeater calls a function at an interval.
+ Example: flash an LED every half second
+
+   unsigned long now;
+
+   bool led_on = false;
+   Repeater led = Repeater([]{
+      led_on = !led_on;
+      digitalWrite(LED_PIN, led_on); 
+   },500,&now);
+
+   void loop() {
+  	now = millis();
+  	led.loop();
+   }
+*/
 class Repeater {
     public:
 		// How long, in milliseconds, between callbacks.
