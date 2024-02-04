@@ -1,6 +1,8 @@
 #include <vector>
 #include <chrono>
-#define ARDUINO 1
+#pragma once
+#define OUTPUT 1
+#define INPUT 1
 typedef unsigned char byte;
 
 inline bool pins[8] = {0,0,0,0,0,0,0,0};
@@ -9,6 +11,14 @@ inline bool digitalRead(unsigned int pin) {
 	if (pin > 8 || pin == 0) return 0;
 	return pins[pin-1];
 }
+
+inline void pinMode(int,int){}
+
+inline void digitalWrite(unsigned int pin, bool value) {
+	if (pin > 8 || pin == 0) return;
+	pins[pin-1] = value;
+}
+
 
 class MockSerial {
 	private:
@@ -31,6 +41,7 @@ class MockSerial {
 		void write (int x) {
 			tx_queue.push_back(x);
 		}
+		void begin (int) {}
 
 };
 
