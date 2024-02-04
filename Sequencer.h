@@ -13,7 +13,7 @@ class Sequencer {
 		Sequencer() {
 			for (byte channel = 0; channel < CHANNELS; channel++) {
 				for (byte step = 0; step < STEPS; step++) {
-					notes[channel][step] = 40;
+					notes[channel][step] = 60;
 				}
 			}
 		}
@@ -21,7 +21,7 @@ class Sequencer {
 			for (byte channel = 0; channel < CHANNELS; channel++) {
 				// note value of 0 means hold the previous note
 				if (notes[channel][current_step] == 0) continue;
-				write_note_off(channel, {notes[channel][current_step],100});
+				write_note_off(channel, {notes[channel][current_step],0});
 			}
 			current_step++;
 			if (current_step >= STEPS - 1) {
@@ -29,7 +29,7 @@ class Sequencer {
 			}
 			for (byte channel = 0; channel < CHANNELS; channel++) {
 				if (notes[channel][current_step] == 0) continue;
-				write_note_on(channel, {notes[channel][current_step],0});
+				write_note_on(channel, {notes[channel][current_step],100});
 			}
 		}
 		void set_note(byte channel, byte note) {
