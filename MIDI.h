@@ -11,8 +11,16 @@ struct MidiStatus {
   byte channel;
 };
 
+struct MidiNote {
+  byte note;
+  byte velocity; // negative is off
+};
+
 MidiStatus parse_status_byte();
 
-byte build_status_byte(byte command, byte channel);
+byte build_status_byte(byte, byte);
+
+void write_note_on(byte,MidiNote);
+void write_note_off(byte,MidiNote);
 
 } // namespace MIDI

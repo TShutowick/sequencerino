@@ -51,9 +51,18 @@ void test_mock_serial() {
 	is(x,-1,"No data");
 }
 
+void test_write_note_on() {
+	MIDI::MidiNote note;
+	MIDI::write_note_on(1,{.note=100, .velocity=100});
+	is(Serial1.tx_queue[0],NOTE_ON + 1,"status byte");
+	is(Serial1.tx_queue[1],0x64,"note byte");
+	is(Serial1.tx_queue[2],0x64,"velocity byte");
+}
+
 int main() {
     test_parse_status();
     test_build_status();
 	test_mock_serial();
+	test_write_note_on();
     return 0;
 }
