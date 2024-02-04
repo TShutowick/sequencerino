@@ -33,7 +33,7 @@ ActionButton tempo(TEMPO_PIN,[]{
 void setup() {
   pinMode(TEMPO_LED_PIN, OUTPUT);
   pinMode(TEMPO_PIN, INPUT);
-  Serial1.begin(31250);
+  MIDI::begin();
   now = millis();
 }
 

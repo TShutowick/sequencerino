@@ -23,7 +23,7 @@ bool is(T got, T want, std::string msg) {
 }
 
 void test_parse_status() {
-	Serial1.push(std::vector<int>{0x80,0x93,0x55});
+	Serial.push(std::vector<int>{0x80,0x93,0x55});
     MIDI::MidiStatus status = MIDI::parse_status_byte();
     is((int)status.status,  NOTE_OFF, "Correct MIDI command (Note Off)");
     is((int)status.channel, 0, "Correct MIDI channel");
@@ -42,21 +42,21 @@ void test_build_status() {
 }
 
 void test_mock_serial() {
-	Serial1.push(std::vector<int>{1,2});
-	int x = Serial1.read();
+	Serial.push(std::vector<int>{1,2});
+	int x = Serial.read();
 	is(x,1,"First item");
-	x = Serial1.read();
+	x = Serial.read();
 	is(x,2,"Last item");
-	x = Serial1.read();
+	x = Serial.read();
 	is(x,-1,"No data");
 }
 
 void test_write_note_on() {
 	MIDI::MidiNote note;
 	MIDI::write_note_on(1,{.note=100, .velocity=100});
-	is(Serial1.tx_queue[0],NOTE_ON + 1,"status byte");
-	is(Serial1.tx_queue[1],0x64,"note byte");
-	is(Serial1.tx_queue[2],0x64,"velocity byte");
+	is(Serial.tx_queue[0],NOTE_ON + 1,"status byte");
+	is(Serial.tx_queue[1],0x64,"note byte");
+	is(Serial.tx_queue[2],0x64,"velocity byte");
 }
 
 int main() {

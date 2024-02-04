@@ -53,4 +53,4 @@ inline unsigned long millis() {
      ).count();
 }
 
-inline MockSerial Serial1;
+inline MockSerial Serial;

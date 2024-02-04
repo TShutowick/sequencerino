@@ -21,5 +21,6 @@ byte build_status_byte(byte cmd, byte channel);
 
 void write_note_on(byte channel,MidiNote note);
 void write_note_off(byte channel,MidiNote note);
+void begin();
 
 } // namespace MIDI
