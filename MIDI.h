@@ -11,18 +11,8 @@ struct MidiStatus {
   byte channel;
 };
 
-MidiStatus parse_status_byte() {
-  MidiStatus ret = {};
-  byte b = Serial1.read();
-  if (b >= 0x80 && b <= 0x9F) {
-    ret.status = (b >> 4) << 4;
-    ret.channel = (b & 0x0f);
-  }
-  return ret;
-}
+MidiStatus parse_status_byte();
 
-byte build_status_byte(byte command, byte channel) {
-  return command | (channel & 0x0f);
-}
+byte build_status_byte(byte command, byte channel);
 
 } // namespace MIDI

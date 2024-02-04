@@ -2,9 +2,9 @@
 #define ARDUINO 1
 typedef unsigned char byte;
 
-bool pins[8] = {0,0,0,0,0,0,0,0};
+inline bool pins[8] = {0,0,0,0,0,0,0,0};
 
-bool digitalRead(unsigned int pin) {
+inline bool digitalRead(unsigned int pin) {
 	if (pin > 8 || pin == 0) return 0;
 	return pins[pin-1];
 }
